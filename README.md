@@ -259,3 +259,7 @@ REACT_APP_API_URL=http://localhost:5000/api
 - **Toast notifications** — success/error feedback on every action
 - **Expiry countdown** — "Expires in X days" / "Expired X days ago"
 - **Mobile responsive** — works on phones and tablets
+
+
+## License
+This project is licensed under the MIT License.
