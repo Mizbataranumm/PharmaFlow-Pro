@@ -3,31 +3,103 @@
 @tailwind components;
 @tailwind utilities;
 
-* { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #f0f4f8;
+  color: #0f1f35;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* Fade-in animation for page transitions */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
+/* Thin, clinical scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
-.fade-in { animation: fadeIn 0.2s ease; }
 
-/* Pulse animation for critical alerts */
+::-webkit-scrollbar-track {
+  background: #f0f4f8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c8d5e0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0b4c4;
+}
+
+/* Stat card top accent bar */
+.stat-card-blue {
+  border-top: 3px solid #3b82f6 !important;
+}
+
+.stat-card-amber {
+  border-top: 3px solid #f59e0b !important;
+}
+
+.stat-card-red {
+  border-top: 3px solid #ef4444 !important;
+}
+
+.stat-card-slate {
+  border-top: 3px solid #94a3b8 !important;
+}
+
+/* Page transition */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fade-in {
+  animation: fadeUp 0.2s ease forwards;
+}
+
+/* Active nav pulse for critical alerts */
 @keyframes pulse-red {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
-  50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(226, 75, 74, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 5px rgba(226, 75, 74, 0);
+  }
 }
-.pulse-critical { animation: pulse-red 2s infinite; }
+
+.pulse-critical {
+  animation: pulse-red 2s infinite;
+}
+
+/* Shimmer effect for skeleton */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}

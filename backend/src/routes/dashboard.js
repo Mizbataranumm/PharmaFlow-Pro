@@ -9,7 +9,7 @@ router.use(protect);
 // Returns aggregated stats and alerts for the dashboard
 router.get('/summary', async (req, res) => {
   try {
-    const all = await Medicine.find({});
+    const all = await Medicine.find({ user: req.user.id });
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);

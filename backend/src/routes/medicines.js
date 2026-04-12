@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
   try {
     const { search, category, status, sort = '-createdAt', page = 1, limit = 50 } = req.query;
 
-    const filter = {};
+    const filter = { user: req.user.id };
 
     // Text search by name
     if (search) {
@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
 // ── GET /api/medicines/:id ────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
-    const medicine = await Medicine.findById(req.params.id);
+    const medicine = await Medicine.findOne({ _id: req.params.id, user: req.user.id });
     if (!medicine) {
       return res.status(404).json({ success: false, message: 'Medicine not found' });
     }
@@ -70,6 +70,7 @@ router.post('/', async (req, res) => {
     const { name, category, quantity, minThreshold, expiryDate, notes } = req.body;
 
     const medicine = await Medicine.create({
+      user: req.user.id,
       name,
       category,
       quantity:     Number(quantity),
@@ -94,8 +95,8 @@ router.put('/:id', async (req, res) => {
   try {
     const { name, category, quantity, minThreshold, expiryDate, notes } = req.body;
 
-    const medicine = await Medicine.findByIdAndUpdate(
-      req.params.id,
+    const medicine = await Medicine.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
       {
         name,
         category,
@@ -124,7 +125,7 @@ router.put('/:id', async (req, res) => {
 // ── DELETE /api/medicines/:id ─────────────────────────────────────────────────
 router.delete('/:id', async (req, res) => {
   try {
-    const medicine = await Medicine.findByIdAndDelete(req.params.id);
+    const medicine = await Medicine.findOneAndDelete({ _id: req.params.id, user: req.user.id });
     if (!medicine) {
       return res.status(404).json({ success: false, message: 'Medicine not found' });
     }

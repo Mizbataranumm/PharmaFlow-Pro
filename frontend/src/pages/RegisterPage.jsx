@@ -4,26 +4,35 @@ import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { Pill, Eye, EyeOff } from 'lucide-react';
 
-export default function LoginPage() {
-  const [form,     setForm]     = useState({ username: '', password: '' });
+export default function RegisterPage() {
+  const [form,     setForm]     = useState({ username: '', name: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading,  setLoading]  = useState(false);
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate  = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.username || !form.password) {
-      toast.error('Please enter username and password');
+      toast.error('Username and password are required');
       return;
     }
+    if (form.username.length < 3) {
+      toast.error('Username must be at least 3 characters');
+      return;
+    }
+    if (form.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(form.username, form.password);
-      toast.success('Welcome back!');
+      await register(form.username, form.password, form.name);
+      toast.success('Account created successfully!');
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Invalid credentials');
+      toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -37,8 +46,8 @@ export default function LoginPage() {
           <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
             <Pill size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-semibold text-slate-800">PharmaFlow</h1>
-          <p className="text-sm text-slate-500 mt-1">Medicine Inventory Dashboard</p>
+          <h1 className="text-2xl font-semibold text-slate-800">Create Account</h1>
+          <p className="text-sm text-slate-500 mt-1">Join PharmaFlow today</p>
         </div>
 
         {/* Card */}
@@ -46,26 +55,38 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                Username
+                Full Name (Optional)
               </label>
               <input
-                type="text" value={form.username} autoFocus
+                type="text" value={form.name} autoFocus
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Dr. John Doe"
+                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                Username *
+              </label>
+              <input
+                type="text" value={form.username}
                 onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                placeholder="admin or staff"
+                placeholder="Choose a username"
                 className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />
             </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                Password
+                Password *
               </label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
                   value={form.password}
                   onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                  placeholder="Enter password"
+                  placeholder="At least 6 characters"
                   className="w-full px-3 py-2.5 pr-10 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
                 />
                 <button type="button" onClick={() => setShowPass((s) => !s)}
@@ -77,19 +98,15 @@ export default function LoginPage() {
 
             <button type="submit" disabled={loading}
               className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition disabled:opacity-60 mt-2">
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Creating Account…' : 'Sign Up'}
             </button>
           </form>
 
           <div className="mt-5 text-center text-sm">
-            <span className="text-slate-500">Don't have an account? </span>
-            <Link to="/register" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">Create one</Link>
+            <span className="text-slate-500">Already have an account? </span>
+            <Link to="/login" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">Sign in</Link>
           </div>
         </div>
-
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Demo — admin / clinic123 &nbsp;·&nbsp; staff / staff456
-        </p>
       </div>
     </div>
   );

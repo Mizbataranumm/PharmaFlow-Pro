@@ -5,7 +5,9 @@ import StatusBadge from '../components/StatusBadge';
 import MedicineForm from '../components/MedicineForm';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { expiryLabel, getDaysToExpiry, CATEGORIES } from '../utils/status';
-import { Plus, Search, Pencil, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, RefreshCw, PackageX } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Skeleton from '../components/Skeleton';
 
 export default function InventoryPage() {
   const [medicines, setMedicines] = useState([]);
@@ -73,16 +75,21 @@ export default function InventoryPage() {
   const openAdd  = () => { setEditMed(null); setShowForm(true); };
 
   return (
-    <div className="fade-in space-y-5">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-5"
+    >
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-slate-800">Inventory</h1>
-          <p className="text-sm text-slate-400 mt-0.5">{medicines.length} medicines total</p>
+          <h1 className="text-xl font-semibold text-slate-800 tracking-tight">Inventory Management</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{medicines.length} medicines tracked</p>
         </div>
         <button onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition">
-          <Plus size={15} /> Add Medicine
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-blue-500/20">
+          <Plus size={16} /> Add Medicine
         </button>
       </div>
 
@@ -114,66 +121,89 @@ export default function InventoryPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
-            <RefreshCw size={15} className="animate-spin mr-2" /> Loading…
-          </div>
-        ) : medicines.length === 0 ? (
-          <div className="py-16 text-center text-slate-400 text-sm">No medicines found.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  {['Medicine','Category','Qty','Min Threshold','Expiry','Status','Actions'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                  ))}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100">
+                {['Medicine','Category','Qty','Min Threshold','Expiry','Status','Actions'].map((h) => (
+                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {loading ? (
+                Array(5).fill(0).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-5 py-4"><Skeleton className="h-5 w-32 mb-1" /><Skeleton className="h-3 w-48" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                    <td className="px-5 py-4"><div className="flex gap-2"><Skeleton className="h-7 w-7 rounded-lg" /><Skeleton className="h-7 w-7 rounded-lg" /></div></td>
+                  </tr>
+                ))
+              ) : medicines.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-24 text-center">
+                    <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
+                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                        <PackageX size={32} className="text-slate-400" />
+                      </div>
+                      <div className="text-base font-semibold text-slate-800 mb-1">No medicines found</div>
+                      <div className="text-sm text-slate-500 mb-6">
+                        We couldn't find anything matching your filters. Try adjusting them or add a new medicine.
+                      </div>
+                      <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium rounded-lg transition-colors">
+                        <Plus size={16} /> Add New Medicine
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {medicines.map((m) => {
+              ) : (
+                medicines.map((m) => {
                   const days     = getDaysToExpiry(m.expiryDate);
-                  const expColor = days < 0 ? 'text-red-500 font-medium' : days <= 7 ? 'text-yellow-600 font-medium' : 'text-slate-400';
+                  const expColor = days < 0 ? 'text-red-500 font-medium' : days <= 7 ? 'text-yellow-600 font-medium' : 'text-slate-500';
                   const pct      = Math.min(100, Math.round((m.quantity / Math.max(1, m.minThreshold * 2)) * 100));
                   const barColor = m.status === 'instock' ? 'bg-green-400' : m.status === 'low' ? 'bg-yellow-400' : m.status === 'critical' ? 'bg-red-400' : 'bg-slate-300';
                   return (
-                    <tr key={m._id} className="hover:bg-slate-50/50 transition">
-                      <td className="px-4 py-3">
-                        <div className="text-sm font-medium text-slate-700">{m.name}</div>
-                        {m.notes && <div className="text-xs text-slate-400 truncate max-w-48">{m.notes}</div>}
+                    <tr key={m._id} className="hover:bg-slate-50/70 transition-colors group">
+                      <td className="px-5 py-3">
+                        <div className="text-sm font-semibold text-slate-800">{m.name}</div>
+                        {m.notes && <div className="text-xs text-slate-400 truncate max-w-[200px] mt-0.5">{m.notes}</div>}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full capitalize">{m.category}</span>
+                      <td className="px-5 py-3">
+                        <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full capitalize border border-slate-200">{m.category}</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm font-semibold text-slate-700">{m.quantity}</div>
-                        <div className="w-14 h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                      <td className="px-5 py-3">
+                        <div className="text-sm font-bold text-slate-700">{m.quantity}</div>
+                        <div className="w-16 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
                           <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${pct}%` }} />
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-500">{m.minThreshold}</td>
-                      <td className={`px-4 py-3 text-xs ${expColor}`}>{expiryLabel(m.expiryDate)}</td>
-                      <td className="px-4 py-3"><StatusBadge status={m.status || 'instock'} /></td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-1.5">
+                      <td className="px-5 py-3 text-sm text-slate-500 font-medium">{m.minThreshold}</td>
+                      <td className={`px-5 py-3 text-xs ${expColor}`}>{expiryLabel(m.expiryDate)}</td>
+                      <td className="px-5 py-3"><StatusBadge status={m.status || 'instock'} /></td>
+                      <td className="px-5 py-3">
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button onClick={() => openEdit(m)}
-                            className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition">
+                            className="p-1.5 rounded-md hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors shadow-sm hover:shadow" title="Edit">
                             <Pencil size={14} />
                           </button>
                           <button onClick={() => setDelId(m._id)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition">
+                            className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors shadow-sm hover:shadow" title="Delete">
                             <Trash2 size={14} />
                           </button>
                         </div>
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showForm && (
@@ -191,6 +221,6 @@ export default function InventoryPage() {
           loading={delLoading}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

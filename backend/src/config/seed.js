@@ -51,11 +51,15 @@ async function seed() {
     // Seed users with hashed passwords
     const usersToInsert = sampleUsers;
 
-    await User.create(usersToInsert);
-    console.log(`✅ Seeded ${usersToInsert.length} users`);
+    const createdUsers = await User.create(usersToInsert);
+    console.log(`✅ Seeded ${createdUsers.length} users`);
+
+    // Assign the new admin user to the sample medicines
+    const adminId = createdUsers[0]._id;
+    const medicinesWithUser = sampleMedicines.map(m => ({ ...m, user: adminId }));
 
     // Seed medicines
-    await Medicine.insertMany(sampleMedicines);
+    await Medicine.insertMany(medicinesWithUser);
     console.log(`✅ Seeded ${sampleMedicines.length} medicines`);
 
     console.log('\nSeed complete! Login credentials:');

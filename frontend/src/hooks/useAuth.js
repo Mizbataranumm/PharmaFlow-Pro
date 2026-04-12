@@ -31,8 +31,16 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const register = async (username, password, name) => {
+    const { data } = await authAPI.register({ username, password, name });
+    localStorage.setItem('pf_token', data.token);
+    localStorage.setItem('pf_user',  JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

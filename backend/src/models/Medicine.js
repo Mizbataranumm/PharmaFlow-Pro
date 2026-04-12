@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 // ── Medicine Schema ───────────────────────────────────────────────────────────
 const medicineSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
+    },
     name: {
       type: String,
       required: [true, 'Medicine name is required'],
