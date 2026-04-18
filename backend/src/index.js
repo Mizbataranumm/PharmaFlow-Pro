@@ -6,6 +6,16 @@ const connectDB = require('./config/db');
 // Load environment variables
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnv = ['MONGO_URI', 'JWT_SECRET'];
+const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+
+if (missingEnv.length > 0) {
+  console.error('❌ CRITICAL ERROR: Missing environment variables:', missingEnv.join(', '));
+  console.error('Please add them to your .env file or deployment dashboard.');
+  process.exit(1);
+}
+
 // Connect to MongoDB
 connectDB();
 
