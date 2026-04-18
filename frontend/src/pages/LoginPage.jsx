@@ -14,7 +14,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.username || !form.password) {
-      toast.error('Please enter username and password');
+      toast.error('Please enter email and password');
       return;
     }
     setLoading(true);
@@ -46,12 +46,12 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                Username
+                Email Address
               </label>
               <input
                 type="text" value={form.username} autoFocus
                 onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                placeholder="admin or staff"
+                placeholder="Enter your email"
                 className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />
             </div>
@@ -87,9 +87,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Demo — admin / clinic123 &nbsp;·&nbsp; staff / staff456
-        </p>
+
       </div>
     </div>
   );

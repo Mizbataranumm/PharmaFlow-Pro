@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Pill, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
-  const [form,     setForm]     = useState({ username: '', name: '', password: '' });
+  const [form,     setForm]     = useState({ username: '', email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading,  setLoading]  = useState(false);
   const { register } = useAuth();
@@ -13,8 +13,8 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.username || !form.password) {
-      toast.error('Username and password are required');
+    if (!form.username || !form.email || !form.password) {
+      toast.error('All fields are required');
       return;
     }
     if (form.username.length < 3) {
@@ -28,7 +28,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await register(form.username, form.password, form.name);
+      await register(form.username, form.password, form.email);
       toast.success('Account created successfully!');
       navigate('/');
     } catch (err) {
@@ -55,12 +55,12 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                Full Name (Optional)
+                Email Address *
               </label>
               <input
-                type="text" value={form.name} autoFocus
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. Dr. John Doe"
+                type="email" value={form.email} autoFocus
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="e.g. john@example.com"
                 className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />
             </div>

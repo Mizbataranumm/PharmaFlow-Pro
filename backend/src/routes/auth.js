@@ -22,17 +22,22 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
-    // Include password field (excluded by default in schema)
-    const user = await User.findOne({ username: username.toLowerCase() }).select('+password');
+    // Find user by email or username
+    const user = await User.findOne({
+      $or: [
+        { email: username.toLowerCase() },
+        { username: username.toLowerCase() }
+      ]
+    }).select('+password');
 
     if (!user || !(await user.matchPassword(password))) {
-      return res.status(401).json({ success: false, message: 'Invalid username or password' });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     res.json({
       success: true,
       token: generateToken(user._id),
-      user: { id: user._id, username: user.username, name: user.name, role: user.role },
+      user: { id: user._id, username: user.username, email: user.email, name: user.name, role: user.role },
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -55,19 +60,35 @@ router.get('/me', protect, async (req, res) => {
 // ── POST /api/auth/register (admin only in production — open for setup) ───────
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, name, role } = req.body;
+    const { username, email, password, name, role } = req.body;
 
-    const existing = await User.findOne({ username: username?.toLowerCase() });
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'Username already exists' });
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
-    const user = await User.create({ username, password, name: name || '', role: role || 'staff' });
+    const existingUser = await User.findOne({ 
+      $or: [
+        { username: username?.toLowerCase() },
+        { email: email?.toLowerCase() }
+      ]
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Username or Email already exists' });
+    }
+
+    const user = await User.create({ 
+      username, 
+      email, 
+      password, 
+      name: name || '', 
+      role: role || 'staff' 
+    });
 
     res.status(201).json({
       success: true,
       token: generateToken(user._id),
-      user: { id: user._id, username: user.username, name: user.name, role: user.role },
+      user: { id: user._id, username: user.username, email: user.email, name: user.name, role: user.role },
     });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
