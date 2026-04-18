@@ -46,7 +46,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                Email Address
+                Email or Username
               </label>
               <input
                 type="email" value={form.email} autoFocus

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Pill, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
-  const [form,     setForm]     = useState({ email: '', password: '' });
+  const [form,     setForm]     = useState({ username: '', email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading,  setLoading]  = useState(false);
   const { register } = useAuth();
@@ -13,8 +13,8 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.email || !form.password) {
-      toast.error('Email and password are required');
+    if (!form.username || !form.email || !form.password) {
+      toast.error('All fields are required');
       return;
     }
 
@@ -25,8 +25,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // Use email as the username for backend consistency
-      await register(form.email, form.password, form.email);
+      await register(form.username, form.password, form.email);
       toast.success('Account created successfully!');
       navigate('/');
     } catch (err) {
@@ -56,9 +55,21 @@ export default function RegisterPage() {
                 Email Address *
               </label>
               <input
-                type="email" value={form.email} autoFocus
+                type="email" value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="e.g. john@example.com"
+                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                Username *
+              </label>
+              <input
+                type="text" value={form.username} autoFocus
+                onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
+                placeholder="Choose a username"
                 className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />
             </div>
