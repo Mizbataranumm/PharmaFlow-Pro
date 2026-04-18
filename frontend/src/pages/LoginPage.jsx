@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Pill, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
-  const [form,     setForm]     = useState({ username: '', password: '' });
+  const [form,     setForm]     = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading,  setLoading]  = useState(false);
   const { login } = useAuth();
@@ -13,13 +13,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.username || !form.password) {
+    if (!form.email || !form.password) {
       toast.error('Please enter email and password');
       return;
     }
     setLoading(true);
     try {
-      await login(form.username, form.password);
+      await login(form.email, form.password);
       toast.success('Welcome back!');
       navigate('/');
     } catch (err) {
@@ -49,8 +49,8 @@ export default function LoginPage() {
                 Email Address
               </label>
               <input
-                type="text" value={form.username} autoFocus
-                onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
+                type="email" value={form.email} autoFocus
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="Enter your email"
                 className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />

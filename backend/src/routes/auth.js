@@ -78,7 +78,7 @@ router.post('/register', async (req, res) => {
     }
 
     const user = await User.create({ 
-      username, 
+      username: username || email, 
       email, 
       password, 
       name: name || '', 
