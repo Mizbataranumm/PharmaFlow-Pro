@@ -90,6 +90,36 @@ router.post('/', async (req, res) => {
   }
 });
 
+// ── POST /api/medicines/bulk ──────────────────────────────────────────────────
+router.post('/bulk', async (req, res) => {
+  try {
+    const medicinesData = req.body;
+
+    if (!Array.isArray(medicinesData)) {
+      return res.status(400).json({ success: false, message: 'Data must be an array' });
+    }
+
+    // Add user ID to each medicine
+    const medicinesWithUser = medicinesData.map((m) => ({
+      ...m,
+      user: req.user.id,
+      quantity: Number(m.quantity || 0),
+      minThreshold: Number(m.minThreshold || 10),
+      expiryDate: new Date(m.expiryDate || new Date().setFullYear(new Date().getFullYear() + 1)),
+    }));
+
+    const medicines = await Medicine.insertMany(medicinesWithUser);
+
+    res.status(201).json({ 
+      success: true, 
+      count: medicines.length, 
+      data: medicines 
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // ── PUT /api/medicines/:id ────────────────────────────────────────────────────
 router.put('/:id', async (req, res) => {
   try {

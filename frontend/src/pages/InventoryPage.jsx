@@ -5,7 +5,7 @@ import StatusBadge from '../components/StatusBadge';
 import MedicineForm from '../components/MedicineForm';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { expiryLabel, getDaysToExpiry, CATEGORIES } from '../utils/status';
-import { Plus, Search, Pencil, Trash2, RefreshCw, PackageX } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, RefreshCw, PackageX, FileUp, Database, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Skeleton from '../components/Skeleton';
 
@@ -19,6 +19,8 @@ export default function InventoryPage() {
   const [editMed,   setEditMed]   = useState(null);
   const [delId,     setDelId]     = useState(null);
   const [delLoading,setDelLoading]= useState(false);
+  const [bulkLoading,setBulkLoading]=useState(false);
+  const [showBulkMenu,setShowBulkMenu]=useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,6 +73,62 @@ export default function InventoryPage() {
     setDelLoading(false);
   };
 
+  const handleSampleData = async () => {
+    setBulkLoading(true);
+    setShowBulkMenu(false);
+    try {
+      const samples = [
+        { name: 'Paracetamol 500mg', category: 'tablet', quantity: 150, minThreshold: 50 },
+        { name: 'Amoxicillin 250mg', category: 'capsule', quantity: 12, minThreshold: 20 },
+        { name: 'Ibuprofen 400mg', category: 'tablet', quantity: 80, minThreshold: 30 },
+        { name: 'Cetirizine 10mg', category: 'tablet', quantity: 200, minThreshold: 40 },
+        { name: 'Guaifenesin Syrup', category: 'syrup', quantity: 5, minThreshold: 10 },
+        { name: 'Salbutamol Inhaler', category: 'inhaler', quantity: 15, minThreshold: 10 },
+        { name: 'Insulin Glargine', category: 'injection', quantity: 8, minThreshold: 15 },
+        { name: 'Hydrocortisone 1%', category: 'ointment', quantity: 25, minThreshold: 10 },
+        { name: 'Metformin 500mg', category: 'tablet', quantity: 300, minThreshold: 100 },
+        { name: 'Omeprazole 20mg', category: 'capsule', quantity: 60, minThreshold: 30 }
+      ].map(m => ({
+        ...m,
+        expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString()
+      }));
+
+      await medicinesAPI.bulkCreate(samples);
+      toast.success('Sample data generated!');
+      load();
+    } catch (_) { toast.error('Failed to generate sample data'); }
+    setBulkLoading(false);
+  };
+
+  const handleCSVImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setShowBulkMenu(false);
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      setBulkLoading(true);
+      try {
+        const text = event.target.result;
+        const rows = text.split('\n').slice(1); // skip header
+        const data = rows.filter(r => r.trim()).map(r => {
+          const [name, category, quantity, minThreshold, expiryDate, notes] = r.split(',').map(s => s.trim());
+          return { name, category: category?.toLowerCase(), quantity, minThreshold, expiryDate, notes };
+        });
+
+        if (data.length === 0) throw new Error('No valid data found');
+        await medicinesAPI.bulkCreate(data);
+        toast.success(`Successfully imported ${data.length} items`);
+        load();
+      } catch (err) {
+        toast.error(err.message || 'Import failed. Check CSV format.');
+      }
+      setBulkLoading(false);
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // reset
+  };
+
   const openEdit = (m) => { setEditMed(m); setShowForm(true); };
   const openAdd  = () => { setEditMed(null); setShowForm(true); };
 
@@ -87,10 +145,42 @@ export default function InventoryPage() {
           <h1 className="text-xl font-semibold text-slate-800 tracking-tight">Inventory Management</h1>
           <p className="text-sm text-slate-500 mt-0.5">{medicines.length} medicines tracked</p>
         </div>
-        <button onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-blue-500/20">
-          <Plus size={16} /> Add Medicine
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Bulk Dropdown */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowBulkMenu(!showBulkMenu)}
+              disabled={bulkLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
+              <Database size={16} className="text-slate-400" />
+              {bulkLoading ? 'Processing…' : 'Bulk Actions'}
+              <ChevronDown size={14} className={`transition-transform ${showBulkMenu ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showBulkMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowBulkMenu(false)}></div>
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-xl shadow-xl z-20 py-1.5 overflow-hidden">
+                  <button onClick={handleSampleData} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                    <Database size={15} className="text-blue-500" />
+                    Fill Sample Data
+                  </button>
+                  <label className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer">
+                    <FileUp size={15} className="text-green-500" />
+                    Import CSV
+                    <input type="file" accept=".csv" className="hidden" onChange={handleCSVImport} />
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+
+          <button onClick={openAdd}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-blue-500/20">
+            <Plus size={16} /> Add Medicine
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

@@ -44,6 +44,7 @@ export const medicinesAPI = {
   create:  (data)   => api.post('/medicines', data),
   update:  (id, data) => api.put(`/medicines/${id}`, data),
   remove:  (id)     => api.delete(`/medicines/${id}`),
+  bulkCreate: (data) => api.post('/medicines/bulk', data),
 };
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
